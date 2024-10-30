@@ -6,6 +6,7 @@ from app.schemas.client_schema import ClientCreate
 from pathlib import Path
 from .watermark_service import  overlay_watermark
 import aiofiles
+from location_service import calculate_distance
 
 AVATAR_FOLDER = Path("app/static/avatars")
 WATERMARK_PATH = "app/static/watermark.png"
@@ -38,7 +39,7 @@ async def create_client_service(db: AsyncSession, client: Client, avatar_file):
     
     return client
 
-async def get_clients(db: AsyncSession, gender: str = None, first_name: str = None, last_name: str = None, sort_by_registration: bool = False):
+async def get_clients(db: AsyncSession, gender: str = None, first_name: str = None, last_name: str = None, sort_by_registration: bool = False, distance: int = None,  latitude = None, longitude = None):
         query = select(Client)
         # Фильтрация
         if gender:
@@ -47,7 +48,11 @@ async def get_clients(db: AsyncSession, gender: str = None, first_name: str = No
             query = query.where(Client.first_name.ilike(f"%{first_name}%"))
         if last_name:
             query = query.where(Client.last_name.ilike(f"%{last_name}%"))
-
+        if distance is not None:
+            clients = [
+                client for client in clients
+                if calculate_distance(latitude, longitude, client.latitude, client.longitude) <= distance
+            ]
         # Сортировка
         if sort_by_registration:
             query = query.order_by(Client.registration_date)

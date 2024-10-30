@@ -5,6 +5,7 @@ from email.mime.text import MIMEText
 SMTP_HOST = os.getenv("SMTP_HOST", "mailcatcher")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 1025))
 
+
 async def send_email(to_email: str, subject: str, body: str):
     """Отправляет email с заданным адресом, темой и телом письма"""
     msg = MIMEText(body)

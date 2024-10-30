@@ -9,9 +9,10 @@ from passlib.context import CryptContext
 security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 async def get_current_user(
     credentials: HTTPBasicCredentials = Depends(security),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     query = select(Client).where(Client.email == credentials.username)
     result = await db.execute(query)
@@ -23,5 +24,5 @@ async def get_current_user(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    
+
     return user

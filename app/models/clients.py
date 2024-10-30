@@ -1,4 +1,3 @@
-
 from app.backend.db import Base
 from sqlalchemy import Column, Integer, String, DateTime, Float
 from datetime import datetime
@@ -7,15 +6,16 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 class Client(Base):
     __tablename__ = "clients"
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True, index=True)
-    password = Column(String)  
+    password = Column(String)
     gender = Column(String)
-    avatar = Column(String)  
+    avatar = Column(String)
     longitude = Column(Float)
     latitude = Column(Float)
     registration_date = Column(DateTime, default=datetime.now)
@@ -23,8 +23,12 @@ class Client(Base):
     daily_likes_count = Column(Integer, default=0)
     last_like_date = Column(DateTime, default=datetime.now)
 
-    likes_given = relationship('Match', foreign_keys='Match.liker_id', back_populates='liker', lazy='dynamic')
-    likes_received = relationship('Match', foreign_keys='Match.liked_id', back_populates='liked', lazy='dynamic')
+    likes_given = relationship(
+        "Match", foreign_keys="Match.liker_id", back_populates="liker", lazy="dynamic"
+    )
+    likes_received = relationship(
+        "Match", foreign_keys="Match.liked_id", back_populates="liked", lazy="dynamic"
+    )
 
     def hash_password(self, password: str):
         self.password = pwd_context.hash(password)
