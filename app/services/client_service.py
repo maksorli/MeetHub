@@ -45,3 +45,31 @@ async def create_client_service(db: AsyncSession, client_data: dict, avatar_file
             raise ValueError("An error occurred while creating the client")
     
     return new_client
+
+async def get_clients(
+    db: AsyncSession,
+    gender: str = None,
+    first_name: str = None,
+    last_name: str = None,
+    sort_by_registration: bool = False
+):
+    query = select(Client)
+    
+    # Фильтрация
+    if gender:
+        query = query.where(Client.gender == gender)
+    if first_name:
+        query = query.where(Client.first_name.ilike(f"%{first_name}%"))
+    if last_name:
+        query = query.where(Client.last_name.ilike(f"%{last_name}%"))
+
+    # Сортировка
+    if sort_by_registration:
+        query = query.order_by(Client.registration_date)
+    else:
+        query = query.order_by(Client.registration_date.desc())
+
+    result = await db.execute(query)
+    clients = result.scalars().all()
+    
+    return clients

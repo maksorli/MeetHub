@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends,UploadFile,File, Form, status, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Query, Depends,UploadFile,File, Form, status, HTTPException, BackgroundTasks
 from typing import Annotated
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.clients import Client
 from app.backend.db_depends import get_db
 from app.schemas.client_schema import ClientCreate
-from app.services.client_service import create_client_service
-from app.services.like_service import LikeService
+from app.services.client_service import create_client_service, get_clients
+from app.services.like_service import record_like
 router = APIRouter(prefix='/api/clients', tags=['client'])
 from sqlalchemy.future import select
 
@@ -56,16 +56,27 @@ async def like_client(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
-    like_service = LikeService(db, background_tasks)
-    result, error = await like_service.record_like(id, liked_id)
-
+    result, error = await record_like(db, background_tasks, id, liked_id)
     if error:
-        raise HTTPException(status_code=403, detail=error)
-
-    return {result}
-
+        return {"error": error}
+    return {"result": result}
  
-
+@router.get("/api/list")
+async def list_clients(
+    gender: str = Query(None, description="Фильтр по полу"),
+    first_name: str = Query(None, description="Фильтр по имени"),
+    last_name: str = Query(None, description="Фильтр по фамилии"),
+    sort_by_registration: bool = Query(False, description="Сортировка по дате регистрации (по возрастанию)"),
+    db: AsyncSession = Depends(get_db)
+):
+    clients = await get_clients(
+        db=db,
+        gender=gender,
+        first_name=first_name,
+        last_name=last_name,
+        sort_by_registration=sort_by_registration
+    )
+    return clients
 
 @router.put('/update_client')
 async def update_client():
