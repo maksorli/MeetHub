@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends,UploadFile,File, Form, status, HTTPException
+from fastapi import APIRouter, Depends,UploadFile,File, Form, status, HTTPException, BackgroundTasks
 from typing import Annotated
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,8 +6,9 @@ from app.models.clients import Client
 from app.backend.db_depends import get_db
 from app.schemas.client_schema import ClientCreate
 from app.services.client_service import create_client_service
-
-router = APIRouter(prefix='/clients', tags=['client'])
+from app.services.like_service import LikeService
+router = APIRouter(prefix='/api/clients', tags=['client'])
+from sqlalchemy.future import select
 
 
 @router.get('/')
@@ -38,7 +39,6 @@ async def create_client(
     }
     
     try:
-        # Создаем клиента через сервис
         new_client = await create_client_service(db, client_data, avatar_file)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -48,6 +48,24 @@ async def create_client(
         'transaction': 'Successful',
         'client': new_client
     }
+
+@router.post("/api/clients/{id}/match")
+async def like_client(
+    id: int, 
+    liked_id: int, 
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db)
+):
+    like_service = LikeService(db, background_tasks)
+    result, error = await like_service.record_like(id, liked_id)
+
+    if error:
+        raise HTTPException(status_code=403, detail=error)
+
+    return {result}
+
+ 
+
 
 @router.put('/update_client')
 async def update_client():

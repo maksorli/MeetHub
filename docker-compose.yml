@@ -5,6 +5,7 @@ services:
     command: >
         bash -c "
        
+        
         alembic upgrade head &&
         
         uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
@@ -33,9 +34,19 @@ services:
       - "5433:5432"
     networks:
       - app-network
+  mailcatcher:
+    image: schickling/mailcatcher
+    container_name: mailcatcher
+    ports:
+      - "1025:1025"   # SMTP порт для отправки почты
+      - "1080:1080"   # Веб-интерфейс Mailcatcher
+    networks:
+      - app-network
 networks:
   app-network:
     driver: bridge
+
+
 
 volumes:
   postgres_data:

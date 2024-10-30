@@ -17,5 +17,8 @@ class Client(Base):
     latitude = Column(Float)
     registration_date = Column(DateTime, default=datetime.now)
 
+    daily_likes_count = Column(Integer, default=0)
+    last_like_date = Column(DateTime, default=datetime.now)
+
     likes_given = relationship('Match', foreign_keys='Match.liker_id', back_populates='liker', lazy='dynamic')
     likes_received = relationship('Match', foreign_keys='Match.liked_id', back_populates='liked', lazy='dynamic')
