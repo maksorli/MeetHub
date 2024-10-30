@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends,UploadFile,File, Form, status, HTTPException
 from typing import Annotated
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,15 +11,35 @@ router = APIRouter(prefix='/clients', tags=['client'])
 
 
 @router.get('/')
-async def get_products(db: Annotated[AsyncSession, Depends(get_db)]):
+async def get_cliens(db: Annotated[AsyncSession, Depends(get_db)]):
     clients = await db.scalars(select(Client))
     return clients.all()
 
 
 @router.post('/create', status_code=status.HTTP_201_CREATED)
-async def create_client(create_client: ClientCreate, db: AsyncSession = Depends(get_db)):
+async def create_client(
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    email: str = Form(...),
+    gender: str = Form(...),
+    longitude: float = Form(...),
+    latitude: float = Form(...),
+    avatar_file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+
+    client_data = {
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "gender": gender,
+        "longitude": longitude,
+        "latitude": latitude,
+    }
+    
     try:
-        new_client = await create_client_service(db, create_client)
+        # Создаем клиента через сервис
+        new_client = await create_client_service(db, client_data, avatar_file)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     
@@ -28,7 +48,6 @@ async def create_client(create_client: ClientCreate, db: AsyncSession = Depends(
         'transaction': 'Successful',
         'client': new_client
     }
-
 
 @router.put('/update_client')
 async def update_client():
