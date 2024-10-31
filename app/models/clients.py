@@ -1,9 +1,10 @@
-from app.backend.db import Base
-from sqlalchemy import Column, Integer, String, DateTime, Float
 from datetime import datetime
+
+from sqlalchemy import Column, DateTime, Float, Integer, String
 from sqlalchemy.orm import relationship
- 
- 
+
+from app.backend.db import Base
+
 
 class Client(Base):
     __tablename__ = "clients"
@@ -27,4 +28,3 @@ class Client(Base):
     likes_received = relationship(
         "Match", foreign_keys="Match.liked_id", back_populates="liked", lazy="dynamic"
     )
- 

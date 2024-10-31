@@ -1,5 +1,6 @@
-from PIL import Image
 import asyncio
+
+from PIL import Image
 
 
 def process_image(image_path, watermark_path):

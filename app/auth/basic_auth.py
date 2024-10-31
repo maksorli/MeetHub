@@ -1,13 +1,14 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app.backend.db_depends import get_db
 from app.models.clients import Client
-from sqlalchemy.future import select
-from passlib.context import CryptContext
-from app.utils.password  import verify_password
+from app.utils.password import verify_password
+
 security = HTTPBasic()
-#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_current_user(

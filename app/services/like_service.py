@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from sqlalchemy.future import select
+
 from app.models import Client, Match
 from app.services.email_service import send_email
-from sqlalchemy.future import select
 
 DAILY_LIKE_LIMIT = 10
 

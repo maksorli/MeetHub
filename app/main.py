@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.routers import client_router, match_router
+
+from app.routers import client_router
 
 app = FastAPI()
 
@@ -10,4 +11,3 @@ async def welcome() -> dict:
 
 
 app.include_router(client_router.router)
-# app.include_router(match_router.router)

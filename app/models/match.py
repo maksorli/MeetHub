@@ -1,7 +1,9 @@
-from sqlalchemy import Boolean, Column, Integer, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
-from app.backend.db import Base
 from datetime import datetime
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer
+from sqlalchemy.orm import relationship
+
+from app.backend.db import Base
 
 
 class Match(Base):
