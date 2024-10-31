@@ -21,12 +21,8 @@ from app.services.like_service import record_like
 router = APIRouter(prefix="/api/clients", tags=["client"])
 from sqlalchemy.future import select
 from app.auth.basic_auth import get_current_user
+from app.utils.password import hash_password
 
-
-@router.get("/")
-async def get_cliens(db: Annotated[AsyncSession, Depends(get_db)]):
-    clients = await db.scalars(select(Client))
-    return clients.all()
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
@@ -47,10 +43,11 @@ async def create_client(
         last_name=last_name,
         email=email,
         gender=gender,
+        password = hash_password(password),
         longitude=longitude,
         latitude=latitude,
     )
-    client.hash_password(password)
+     
 
     try:
         new_client = await create_client_service(db, client, avatar_file)
@@ -97,7 +94,6 @@ async def list_clients(
         first_name=first_name,
         last_name=last_name,
         distance=distance,
-        current_user=current_user,
         longitude=current_user.longitude,
         latitude=current_user.latitude,
         sort_by_registration=sort_by_registration,
@@ -105,11 +101,16 @@ async def list_clients(
     return clients
 
 
-@router.put("/update_client")
-async def update_client():
-    pass
+# @router.put("/update_client")
+# async def update_client():
+#     pass
 
 
-@router.delete("/delete")
-async def delete_client():
-    pass
+# @router.delete("/delete")
+# async def delete_client():
+#     pass
+
+# @router.get("/")
+# async def get_clients(db: Annotated[AsyncSession, Depends(get_db)]):
+#     clients = await db.scalars(select(Client))
+#     return clients.all()

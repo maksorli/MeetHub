@@ -2,10 +2,8 @@ from app.backend.db import Base
 from sqlalchemy import Column, Integer, String, DateTime, Float
 from datetime import datetime
 from sqlalchemy.orm import relationship
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+ 
+ 
 
 class Client(Base):
     __tablename__ = "clients"
@@ -29,9 +27,4 @@ class Client(Base):
     likes_received = relationship(
         "Match", foreign_keys="Match.liked_id", back_populates="liked", lazy="dynamic"
     )
-
-    def hash_password(self, password: str):
-        self.password = pwd_context.hash(password)
-
-    def verify_password(self, password: str) -> bool:
-        return pwd_context.verify(password, self.password)
+ 

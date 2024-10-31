@@ -5,9 +5,9 @@ from app.backend.db_depends import get_db
 from app.models.clients import Client
 from sqlalchemy.future import select
 from passlib.context import CryptContext
-
+from app.utils.password  import verify_password
 security = HTTPBasic()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+#pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_current_user(
@@ -18,7 +18,7 @@ async def get_current_user(
     result = await db.execute(query)
     user = result.scalars().first()
 
-    if user is None or not pwd_context.verify(credentials.password, user.password):
+    if user is None or not verify_password(credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
