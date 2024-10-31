@@ -42,6 +42,21 @@ services:
       - "1080:1080"   # Веб-интерфейс Mailcatcher
     networks:
       - app-network
+  tests:
+    build: .
+    container_name: fastapi_tests
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    command: >
+      bash -c "
+      alembic upgrade head &&
+      pytest tests/ --maxfail=1 --disable-warnings -v"
+    networks:
+      - app-network
 networks:
   app-network:
     driver: bridge
