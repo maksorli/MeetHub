@@ -13,6 +13,7 @@ router = APIRouter(prefix="/api/clients", tags=["client"])
 
 from app.auth.basic_auth import get_current_user
 
+ 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_client(

@@ -1,0 +1,50 @@
+services:
+  web:
+     
+    build:
+      context: .
+      dockerfile: ./Dockerfile.prod
+    
+    command: >
+      bash -c "
+     
+        
+      alembic upgrade head &&
+    
+      gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000"
+
+    depends_on:
+      - db
+    env_file:
+      - .env   
+    networks:
+      - app-network
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - app-network
+      
+  nginx:
+    build: nginx
+    ports:
+      - 80:80
+    depends_on:
+      - web
+    networks:
+      - app-network
+    restart: always
+
+
+volumes:
+  postgres_data:
+
+networks:
+    app-network:
+      driver: bridge
