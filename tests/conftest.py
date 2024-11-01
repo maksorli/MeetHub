@@ -31,8 +31,7 @@ async def test_db():
 
 @pytest_asyncio.fixture
 async def async_client(test_db):
-    from app.backend.db_depends import \
-        get_db  # Убедитесь, что путь к get_db правильный
+    from app.backend.db_depends import get_db  # Убедитесь, что путь к get_db правильный
 
     async def override_get_db():
         yield test_db

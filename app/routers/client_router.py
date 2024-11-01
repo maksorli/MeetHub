@@ -1,11 +1,22 @@
-from fastapi import (APIRouter, BackgroundTasks, Depends, File, Form,
-                     HTTPException, Query, UploadFile, status)
+from typing import Optional
+
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from pydantic import EmailStr, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.backend.db_depends import get_db
 from app.models.clients import Client
-from app.schemas.client_schema import ClientCreate, GenderEnum
+from app.schemas.client_schema import ClientCreate, ClientResponse, GenderEnum
 from app.services.client_service import create_client_service, get_clients
 from app.services.like_service import record_like
 
@@ -13,44 +24,43 @@ router = APIRouter(prefix="/api/clients", tags=["client"])
 
 from app.auth.basic_auth import get_current_user
 
- 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_client(
-    first_name: str = Form(
-        ..., min_length=2, max_length=50, description="Имя (2-50 символов)"
+    first_name: Optional[str] = Form(
+        "Unknown", min_length=2, max_length=50, description="Имя (2-50 символов)"
     ),
-    last_name: str = Form(
-        ..., min_length=2, max_length=50, description="Фамилия (2-50 символов)"
+    last_name: Optional[str] = Form(
+        "Unknown", min_length=2, max_length=50, description="Фамилия (2-50 символов)"
     ),
-    email: EmailStr = Form(..., description="Действительный адрес электронной почты"),
-    password: str = Form(
+    email: Optional[EmailStr] = Form(
+        ..., description="Действительный адрес электронной почты"
+    ),
+    password: Optional[str] = Form(
         ..., min_length=8, max_length=128, description="Пароль (8-128 символов)"
     ),
-    gender: GenderEnum = Form(..., description="Пол (Male или Female)"),
-    longitude: float = Form(
-        ..., ge=-180.0, le=180.0, description="Долгота (-180 до 180)"
+    gender: Optional[GenderEnum] = Form(..., description="Пол (Male или Female)"),
+    longitude: Optional[float] = Form(
+        0.0, ge=-180.0, le=180.0, description="Долгота (-180 до 180)"
     ),
-    latitude: float = Form(..., ge=-90.0, le=90.0, description="Широта (-90 до 90)"),
-    avatar_file: UploadFile = File(..., description="Файл аватара"),
+    latitude: Optional[float] = Form(
+        0.0, ge=-90.0, le=90.0, description="Широта (-90 до 90)"
+    ),
+    avatar_file: Optional[UploadFile] = File(..., description="Файл аватара"),
     db: AsyncSession = Depends(get_db),
 ):
-    try:
-        client_data = ClientCreate(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            password=password,
-            gender=gender,
-            longitude=longitude,
-            latitude=latitude,
-        )
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
-        )
-    # Create the Client instance using the form data
+    # Создание экземпляра ClientCreate
+    client_data = ClientCreate(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        password=password,
+        gender=gender,
+        longitude=longitude,
+        latitude=latitude,
+    )
 
+    # Вызов сервиса для создания клиента
     try:
         new_client = await create_client_service(
             db, avatar_file, client_data=client_data
@@ -61,7 +71,7 @@ async def create_client(
     return {
         "status_code": status.HTTP_201_CREATED,
         "transaction": "Successful",
-        "client": new_client,
+        "client": ClientResponse.model_validate(new_client),
     }
 
 

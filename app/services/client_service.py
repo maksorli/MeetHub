@@ -6,8 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.clients import Client
-from app.repository.client_repository import (repository_add_client,
-                                              repository_get_clients)
+from app.repository.client_repository import (
+    repository_add_client,
+    repository_get_clients,
+)
+from app.schemas.client_schema import ClientResponse
 from app.utils.password import hash_password
 
 from ..utils.location import calculate_distance
@@ -89,5 +92,5 @@ async def get_clients(
             )
             <= distance
         ]
-
-    return clients
+    client_responses = [ClientResponse.model_validate(client) for client in clients]
+    return client_responses
